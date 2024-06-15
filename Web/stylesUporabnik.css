@@ -1,0 +1,127 @@
+body {
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.blue-band {
+    background-color: #33b5e5;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+}
+
+.blue-band h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    flex: 1;
+    text-align: center;
+}
+
+#username {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.banner-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;    
+    width: 50%;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+
+#banner {
+    background-color: #33b5e5;
+    color: white;
+    padding: 1rem 0;
+    border-radius: 8px;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-container {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-row label {
+    margin-bottom: 0.5rem;
+}
+
+.form-row input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Button container styles */
+.button-container {
+    display: flex;
+    justify-content: center;
+    background-color: #fff; /* Match background color of list */
+    padding: 10px 0;
+}
+
+.button-container button {
+    padding: 10px 20px;
+    background-color: #33b5e5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button-container button:hover {
+    background-color: #1e88e5;
+}
+
+.error {
+    color: red;
+    margin-bottom: 10px;
+    text-align: center;
+}

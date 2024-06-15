@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <title>Nov projekt</title>
+    <style>
+        .banner-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff; /* Match background color of list */
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            list-style-type: none; /* Remove default list styles */
+            padding-left: 0; /* Remove default padding */
+        }
+
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .user-list-item input[type="checkbox"] {
+            background-color: initial;
+            cursor: default;
+            appearance: auto;
+            box-sizing: border-box;
+            margin: 3px 3px 3px 4px;
+            padding: initial;
+            border: initial;
+            max-width: 15px;
+        }
+
+        .user-list-item label {
+            margin: 0;
+            align-items: left;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left">
+            <div id="username">Username</div>
+        </div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="banner-container">
+            <div id="banner">Dodajanje projekta</div>
+        </div>
+        <div class="form-container">
+            <form id="edit-project-form">
+                <div class="form-row">
+                    <label for="imeprojekta">Ime projekta:</label>
+                    <input type="text" id="imeprojekta" name="ime" required>
+                </div>
+                <div class="form-row">
+                    <label for="opisprojekta">Opis projekta:</label>
+                    <input type="text" id="opisprojekta" name="opis" required>
+                </div>
+                <div class="form-row">
+                    <label for="osebe-dostop">Osebe z dostopom:
+                        <ul class="user-list" id="osebe-dostop">
+                            <!-- User list checkboxes will be populated here -->
+                        </ul>
+                    </label>                    
+                </div>
+                <div class="button-container">
+                    <button type="submit">Dodaj projekt</button>
+                </div>
+            </form>
+            <div id="error-message" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const userID = getCookie('user_id');
+                const token = getCookie('token');
+
+                const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek || 'No Username Available';
+
+                const usersResponse = await fetch('http://localhost/TMan/API/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!usersResponse.ok) {
+                    throw new Error(`Failed to fetch users (${usersResponse.status})`);
+                }
+
+                const usersData = await usersResponse.json();
+                const usersList = document.getElementById('osebe-dostop');
+
+                usersData.forEach(user => {
+                    const li = document.createElement('li');
+                    li.classList.add('user-list-item');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'dostopID';
+                    checkbox.value = user.id;
+                    li.appendChild(checkbox);
+                    li.appendChild(document.createTextNode(`${user.vzdevek}`));
+                    usersList.appendChild(li);
+                });
+
+                const form = document.getElementById('edit-project-form');
+                const errorMessage = document.getElementById('error-message');
+
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(form);
+                    const ime = formData.get('ime');
+                    const opis = formData.get('opis');
+                    const dostopIDs = formData.getAll('dostop[]');
+
+                    const newProject = {
+                        ime: ime,
+                        opis: opis,
+                        userID: userID,
+                        dostop: dostopIDs
+                    };
+
+                    try {
+                        const response = await fetch('http://localhost/TMan/API/projects', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                                'Identification': `UserID ${userID}`
+                            },
+                            body: JSON.stringify(newProject)
+                        });
+
+                        if (!response.ok) {
+                            let errorMessageText = 'Neuspešno dodajanje projekta. Preveri vhodne podatke';
+                            if (response.status === 400 || response.status === 500) {
+                                errorMessageText = await response.text();
+                            }
+                            throw new Error(`Error ${response.status}: ${errorMessageText}`);
+                        }
+
+                        alert('Projekt uspešno dodan!');
+                        form.reset();
+                        errorMessage.textContent = '';
+                        window.location.href = 'dashboard.html';
+
+                    } catch (error) {
+                        errorMessage.textContent = error.message || 'Failed to add project. Please check your input.';
+                        console.error('Error:', error);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+            }
+        });
+    </script>
+</body>
+</html>

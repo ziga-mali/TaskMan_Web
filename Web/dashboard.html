@@ -101,19 +101,16 @@
                 limitCheckboxSelection('projects-list');
 
                 document.getElementById('add-user').addEventListener('click', async function() {
-                    window.location.href = 'registracija.html'
-                    console.log('Add user logic here');
+                    window.location.href = 'registracija.html';
                 });
 
                 document.getElementById('edit-user').addEventListener('click', async function() {
-                    console.log('Edit user logic here');
                     const checkedUserId = getCheckedItemId('users-list');
-                    console.log('Checked user ID:', checkedUserId);
+                    window.location.href = `urediUporabnika.html?userID=${checkedUserId}`;
                 });
 
                 document.getElementById('add-project').addEventListener('click', async function() {
-                    // Logic to add project
-                    console.log('Add project logic here');
+                    window.location.href = 'NovProjekt.html'
                 });
 
                 document.getElementById('edit-project').addEventListener('click', async function() {

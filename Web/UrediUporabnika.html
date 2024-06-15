@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <title>Posodobi uporabnika</title>
+    <style>
+        .banner-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+        }
+
+        .button-container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #fff; /* Match background color of list */
+        padding: 10px 20px;
+        margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left">
+            <div id="username">Username</div>
+        </div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="banner-container">
+            <div id="banner">Urejanje uporabnika</div>
+        </div>
+        <div class="form-container">
+            <form id="edit-user-form">
+                <div class="form-row">
+                    <label for="vzdevek">Vzdevek:</label>
+                    <input type="text" id="vzdevek" name="vzdevek" required>
+                </div>
+                <div class="form-row">
+                    <label for="geslo">Geslo:</label>
+                    <input type="password" id="geslo" name="geslo" required>
+                </div>
+                <div class="form-row">
+                    <label for="ponoviGeslo">Ponovi geslo:</label>
+                    <input type="password" id="ponoviGeslo" name="ponoviGeslo" required>
+                </div>
+                <div class="form-row">
+                    <label for="ime">Ime:</label>
+                    <input type="text" id="ime" name="ime" required>
+                </div>
+                <div class="form-row">
+                    <label for="priimek">Priimek:</label>
+                    <input type="text" id="priimek" name="priimek" required>
+                </div>
+                <div class="form-row">
+                    <label for="mail">Email:</label>
+                    <input type="email" id="mail" name="mail" required>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" id="delete-button">Izbriši uporabnika</button>
+                    <button type="submit">Potrdi spremembo</button>
+                </div>
+            </form>
+            <div id="error-message" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userID = getCookie('user_id');
+            const token = getCookie('token');
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const userIDrequest = urlParams.get('userID');
+
+            try {         
+                    const userResponse = await fetch('http://localhost/TMan/API/users/' + userID, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                if (userResponse.status === 204) {
+                    document.getElementById('username').innerText = 'No Username Available';
+                } else {
+                    const userData = await userResponse.json();
+                    const vzdevek = userData.vzdevek;
+                    document.getElementById('username').innerText = vzdevek;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+            }
+            
+            try {
+                const userResponse = await fetch('http://localhost/TMan/API/users/' + userIDrequest, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                const userData = await userResponse.json();
+
+                document.getElementById('vzdevek').value = userData.vzdevek;
+                document.getElementById('ime').value = userData.ime;
+                document.getElementById('priimek').value = userData.priimek;
+                document.getElementById('mail').value = userData.mail;
+
+                if (userResponse.status === 204) {
+                    document.getElementById('username').innerText = 'No Username Available';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error.message)
+                const errorMessage = document.getElementById('error-message');
+            }
+
+
+            const form = document.getElementById('edit-user-form');
+            const errorMessage = document.getElementById('error-message');
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+
+                const geslo = formData.get('geslo');
+                const ponoviGeslo = formData.get('ponoviGeslo');
+
+                if(geslo != "" && ponoviGeslo != ""){
+                    if (geslo === ponoviGeslo) {
+                    const updatedUser = {
+                        vzdevek: formData.get('vzdevek'),
+                        geslo: MD5hash(formData.get('geslo')),
+                        ime: formData.get('ime'),
+                        priimek: formData.get('priimek'),
+                        mail: formData.get('mail')
+                    }
+
+                    try {
+                        const response = await fetch(`http://localhost/TMan/API/users/${userIDrequest}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                                'Identification': `UserID ${userID}`
+                            },
+                            body: JSON.stringify(updatedUser)
+                        });
+
+                        if (!response.ok) {
+                            let errorMessageText = 'Neuspešna posodobitev. Preveri vhodne podatke';
+                            if (response.status === 400 || response.status === 500) {
+                                errorMessageText = await response.text();
+                            }
+                            throw new Error(`Error ${response.status}: ${errorMessageText}`);
+                        }
+
+                        alert('Uporabnik uspešno posodobljen!');
+                        form.reset();
+                        errorMessage.textContent = '';
+                        window.location.href = 'dashboard.html';
+
+                    } catch (error) {
+                        errorMessage.textContent = error.message || 'Failed to update user. Please check your input.';
+                        console.error('Error:', error);
+                    }
+                    } else {
+                        alert('Geslo se ne ujema!');
+                    }
+                }else{
+                    alert('Geslo je prazno!');
+                }
+                
+            });
+
+            const deleteButton = document.getElementById('delete-button');
+            deleteButton.addEventListener('click', async function() {
+                
+                if (confirm('Ali ste prepričani o izbrisu?')) {
+                    try {
+                        const response = await fetch(`http://localhost/TMan/API/users/${userIDrequest}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Identification': `UserID ${userID}`
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Neuspešno brisanje uporabnika (${response.status})`);
+                        }
+
+                        alert('Uporabnik uspešno izbrisan!');
+                        window.location.href = 'dashboard.html';
+
+                    } catch (error) {
+                        console.error('Error deleting user:', error.message);
+                        alert('Failed to delete user. Please try again.');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
