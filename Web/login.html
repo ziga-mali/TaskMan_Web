@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <script src="orodja.js"></script>
+        <title>Login</title>
+    </head>
+    <body>
+        <div id="banner">TaskMan</div>
+        <form id="login-form">
+            <h1>Login</h1>
+            <label for="vzdevek">Username:</label>
+            <input type="text" id="vzdevek" name="vzdevek" required><br><br>
+            <label for="geslo">Password:</label>
+            <input type="password" id="geslo" name="geslo" required><br><br>
+            <button type="submit">Login</button>
+            <div id="response"></div>
+        </form>
+
+        <script>
+            document.getElementById('login-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const vzdevek = document.getElementById('vzdevek').value;
+                let geslo = document.getElementById('geslo').value;
+
+                const response = await fetch('http://localhost/TMan/API/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        vzdevek: vzdevek,
+                        geslo: MD5hash(geslo)
+                    })
+                });
+                
+
+                if (response.status === 200) {
+                    const data = await response.json();
+
+                    const isAdmin = data[0].admin;
+                    const userId = data[0].user_id;
+                    const token = data[0].token;
+
+                    // Save user_id and token as cookies
+                    document.cookie = `user_id=${userId}; path=/`;
+                    document.cookie = `token=${token}; path=/`;
+
+                    if (isAdmin === "1") {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        document.getElementById('response').innerText = "You don't have administrator rights.";
+                    }
+                } else if (response.status === 401) {
+                    document.getElementById('response').innerText = 'Unauthorized: Incorrect username or password.';
+                } else if (response.status === 400) {
+                    document.getElementById('response').innerText = 'Bad Request: Missing username or password.';
+                } else {
+                    document.getElementById('response').innerText = 'Error: ' + response.status;
+                }
+            });
+        </script>
+    </body>
+</html>

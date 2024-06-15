@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <title>Create New User</title>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left"> <!-- Added a div to align username to the left -->
+            <div id="username">Username</div>
+        </div>
+        <div class="banner-container"> <!-- Centered text and put banner above the form -->
+            <div id="banner">Ustvari novega uporabnika</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <form id="create-user-form" class="list">
+            <div class="form-row">
+                <label for="vzdevek">Vzdevek:</label>
+                <input type="text" id="vzdevek" name="vzdevek" required>
+            </div>
+            <div class="form-row">
+                <label for="geslo">Geslo:</label>
+                <input type="password" id="geslo" name="geslo" required>
+            </div>
+            <div class="form-row">
+                <label for="ponoviGeslo">Ponovi geslo:</label>
+                <input type="password" id="ponoviGeslo" name="ponoviGeslo" required>
+            </div>
+            <div class="form-row">
+                <label for="ime">Ime:</label>
+                <input type="text" id="ime" name="ime" required>
+            </div>
+            <div class="form-row">
+                <label for="priimek">Priimek:</label>
+                <input type="text" id="priimek" name="priimek" required>
+            </div>
+            <div class="form-row">
+                <label for="mail">Email:</label>
+                <input type="email" id="mail" name="mail" required>
+            </div>
+
+            <div class="button-container">
+                <button type="submit">Ustvari uporabnika</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const userID = getCookie('user_id');
+                const token = getCookie('token');
+
+                const userResponse = await fetch('http://localhost/TMan/API/users/' + userID, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                // Handle the case where the server responds with no JSON body
+                if (userResponse.status === 204) {
+                    document.getElementById('username').innerText = 'No Username Available';
+                } else {
+                    const userData = await userResponse.json();
+                    const vzdevek = userData.vzdevek;
+                    document.getElementById('username').innerText = vzdevek;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+            }
+
+            const form = document.getElementById('create-user-form');
+            const errorMessage = document.getElementById('error-message');
+            const usernameDisplay = document.getElementById('username');
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+
+                geslo = formData.get('geslo')
+                ponoviGeslo = formData.get('ponoviGeslo')
+
+                if (geslo == ponoviGeslo) {
+                    const newUser = {
+                        vzdevek: formData.get('vzdevek'),
+                        geslo: MD5hash(formData.get('geslo')),
+                        ime: formData.get('ime'),
+                        priimek: formData.get('priimek'),
+                        mail: formData.get('mail')
+                    };
+
+                    try {
+                        const response = await fetch('http://localhost/TMan/API/users', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(newUser)
+                        });
+
+                        if (!response.ok) {
+                            let errorMessageText = 'Failed to create user. Please check your input.';
+                            if (response.status === 400 || response.status === 500) {
+                                errorMessageText = await response.text();
+                            }
+                            throw new Error(`Error ${response.status}: ${errorMessageText}`);
+                        }
+
+                        if (response.status === 201 || response.status === 204) {
+                            alert('Uporabnik uspešno ustvarjen!');
+                            form.reset();
+                            errorMessage.textContent = '';
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            const responseData = await response.json();
+                            if (responseData.success) {
+                                alert('User created successfully!');
+                                form.reset();
+                                errorMessage.textContent = '';
+                                window.location.href = 'dashboard.html';
+                            } else {
+                                throw new Error(responseData.message || 'Failed to create user.');
+                            }
+                        }
+                    } catch (error) {
+                        errorMessage.textContent = error.message || 'Failed to create user. Please check your input.';
+                        console.error('Error:', error);
+                    }
+                } else {
+                    alert('Geslo se ne ujema!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

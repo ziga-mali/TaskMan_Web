@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="orodja.js"></script>    
+    <title>Dashboard</title>
+</head>
+<body>
+    <div class="blue-band">
+        <div id="username">Username</div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="list" id="users">
+            <h2>Uporabniki</h2>
+            <ul id="users-list">
+            </ul>
+            <div class="button-container">
+                <button id="add-user">Dodaj uporabnika</button>
+                <button id="edit-user">Uredi uporabnika</button>
+            </div>
+        </div>
+        <div class="list" id="projects">
+            <h2>Projekti</h2>
+            <ul id="projects-list">
+            </ul>
+            <div class="button-container">
+                <button id="add-project">Dodaj projekt</button>
+                <button id="edit-project">Uredi projekt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {                
+                const userID = getCookie('user_id');
+                const token = getCookie('token');
+
+                const userResponse = await fetch('http://localhost/TMan/API/users/' + userID, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek;
+
+                const usersResponse = await fetch('http://localhost/TMan/API/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!usersResponse.ok) {
+                    throw new Error(`Failed to fetch users (${usersResponse.status})`);
+                }
+                const usersData = await usersResponse.json();
+                const usersList = document.getElementById('users-list');
+                usersData.forEach(user => {
+                    const li = document.createElement('li');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'user-checkbox';
+                    checkbox.value = user.id;
+                    li.appendChild(checkbox);
+                    li.appendChild(document.createTextNode(`${user.vzdevek}`));
+                    usersList.appendChild(li);
+                });
+
+                const projectsResponse = await fetch('http://localhost/TMan/API/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!projectsResponse.ok) {
+                    throw new Error(`Failed to fetch projects (${projectsResponse.status})`);
+                }
+                const projectsData = await projectsResponse.json();
+                const projectsList = document.getElementById('projects-list');
+                projectsData.forEach(project => {
+                    const li = document.createElement('li');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'project-checkbox';
+                    checkbox.value = project.id;
+                    li.appendChild(checkbox);
+                    li.appendChild(document.createTextNode(`${project.ime} - ${project.opis}`));
+                    projectsList.appendChild(li);
+                });
+
+                limitCheckboxSelection('users-list');
+                limitCheckboxSelection('projects-list');
+
+                document.getElementById('add-user').addEventListener('click', async function() {
+                    window.location.href = 'registracija.html'
+                    console.log('Add user logic here');
+                });
+
+                document.getElementById('edit-user').addEventListener('click', async function() {
+                    console.log('Edit user logic here');
+                    const checkedUserId = getCheckedItemId('users-list');
+                    console.log('Checked user ID:', checkedUserId);
+                });
+
+                document.getElementById('add-project').addEventListener('click', async function() {
+                    // Logic to add project
+                    console.log('Add project logic here');
+                });
+
+                document.getElementById('edit-project').addEventListener('click', async function() {
+                    // Logic to edit project
+                    console.log('Edit project logic here');
+                    const checkedProjectId = getCheckedItemId('projects-list');
+                    console.log('Checked project ID:', checkedProjectId);
+                });
+
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles can be added here if necessary */
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div id="username">Username</div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="list">
+            <h2>Uporabniki</h2>
+            <ul id="users-list">
+                <!-- User list items will be dynamically added here -->
+            </ul>
+        </div>
+        <div class="list">
+            <h2>Projekti</h2>
+            <ul id="projects-list">
+                <!-- Project list items will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                function getCookie(name) {
+                    const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                    return cookieValue ? cookieValue.pop() : '';
+                }
+
+                const userID = getCookie('user_id');
+                const token = getCookie('token');
+
+                const userResponse = await fetch('http://localhost/TMan/API/users/' + userID, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek;
+
+                const usersResponse = await fetch('http://localhost/TMan/API/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!usersResponse.ok) {
+                    throw new Error(`Failed to fetch users (${usersResponse.status})`);
+                }
+                const usersData = await usersResponse.json();
+                const usersList = document.getElementById('users-list');
+                usersData.forEach(user => {
+                    const li = document.createElement('li');
+                    li.textContent = `${user.vzdevek} (${user.ime} ${user.priimek})`;
+                    usersList.appendChild(li);
+                });
+
+                const projectsResponse = await fetch('http://localhost/TMan/API/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+                if (!projectsResponse.ok) {
+                    throw new Error(`Failed to fetch projects (${projectsResponse.status})`);
+                }
+                const projectsData = await projectsResponse.json();
+                const projectsList = document.getElementById('projects-list');
+                projectsData.forEach(project => {
+                    const li = document.createElement('li');
+                    li.textContent = `${project.ime} - ${project.opis}`;
+                    projectsList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+            }
+        });
+    </script>
+</body>
+</html>
