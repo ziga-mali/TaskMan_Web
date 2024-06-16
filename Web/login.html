@@ -61,12 +61,12 @@
                     if (isAdmin === "1") {
                         window.location.href = 'dashboard.html';
                     } else {
-                        document.getElementById('response').innerText = "You don't have administrator rights.";
+                        document.getElementById('response').innerText = "Nimate administratorskih pravic.";
                     }
                 } else if (response.status === 401) {
-                    document.getElementById('response').innerText = 'Unauthorized: Incorrect username or password.';
+                    document.getElementById('response').innerText = 'Napačno uporabniško ime ali geslo';
                 } else if (response.status === 400) {
-                    document.getElementById('response').innerText = 'Bad Request: Missing username or password.';
+                    document.getElementById('response').innerText = 'Manjka uporabniško ime ali geslo';
                 } else {
                     document.getElementById('response').innerText = 'Error: ' + response.status;
                 }

@@ -62,23 +62,5 @@ function pridobi_projekte($id)
         error_log("Error checking admin status: " . mysqli_error($zbirka));
         echo json_encode(array("error" => "Internal Server Error"));
     }
-	/*
-	global $zbirka;
-	$odgovor=array();
-	$id = mysqli_escape_string($zbirka, $id);
-	
-	$poizvedba="SELECT p.* FROM projects AS p JOIN projectsuser AS pu ON p.id = pu.id_projekta JOIN user AS u ON pu.id_userja = u.id WHERE u.id = $id";	
-	
-	$rezultat=mysqli_query($zbirka, $poizvedba);
-	
-	while($vrstica=mysqli_fetch_assoc($rezultat))
-	{
-		$odgovor[]=$vrstica;
-	}
-
-	http_response_code(200);
-	error_log("Response data: ".json_encode($odgovor));		//OK
-	echo json_encode($odgovor);
-	*/
 }
 ?>

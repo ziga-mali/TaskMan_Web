@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <script src="orodja.js"></script>    
+    <script src="orodja.js"></script>
     <title>Dashboard</title>
 </head>
 <body>
     <div class="blue-band">
         <div id="username">Username</div>
         <h1 class="TaskMan">TaskMan</h1>
+        <a href="#" id="logout-button" class="home-button">Izpis</a>
     </div>
 
     <div class="container">
@@ -36,22 +37,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            try {                
+            try {
                 const userID = getCookie('user_id');
                 const token = getCookie('token');
+                if (!userID || !token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
 
-                const userResponse = await fetch('http://localhost/TMan/API/users/' + userID, {
+                const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Identification': `UserID ${userID}`
                     }
                 });
-                if (!userResponse.ok) {
-                    throw new Error(`Failed to fetch username (${userResponse.status})`);
-                }
+                if (!userResponse.ok) throw new Error(`Failed to fetch username (${userResponse.status})`);
                 const userData = await userResponse.json();
-                const vzdevek = userData.vzdevek;
-                document.getElementById('username').innerText = vzdevek;
+                document.getElementById('username').innerText = userData.vzdevek;
 
                 const usersResponse = await fetch('http://localhost/TMan/API/users', {
                     headers: {
@@ -59,9 +61,7 @@
                         'Identification': `UserID ${userID}`
                     }
                 });
-                if (!usersResponse.ok) {
-                    throw new Error(`Failed to fetch users (${usersResponse.status})`);
-                }
+                if (!usersResponse.ok) throw new Error(`Failed to fetch users (${usersResponse.status})`);
                 const usersData = await usersResponse.json();
                 const usersList = document.getElementById('users-list');
                 usersData.forEach(user => {
@@ -81,9 +81,7 @@
                         'Identification': `UserID ${userID}`
                     }
                 });
-                if (!projectsResponse.ok) {
-                    throw new Error(`Failed to fetch projects (${projectsResponse.status})`);
-                }
+                if (!projectsResponse.ok) throw new Error(`Failed to fetch projects (${projectsResponse.status})`);
                 const projectsData = await projectsResponse.json();
                 const projectsList = document.getElementById('projects-list');
                 projectsData.forEach(project => {
@@ -100,37 +98,46 @@
                 limitCheckboxSelection('users-list');
                 limitCheckboxSelection('projects-list');
 
-                document.getElementById('add-user').addEventListener('click', async function() {
+                document.getElementById('add-user').addEventListener('click', () => {
                     window.location.href = 'registracija.html';
                 });
 
-                document.getElementById('edit-user').addEventListener('click', async function() {
+                document.getElementById('edit-user').addEventListener('click', () => {
                     const checkedUserId = getCheckedItemId('users-list');
-                    if(checkedUserId != null){                        
+                    if (checkedUserId != null) {
                         window.location.href = `urediUporabnika.html?userID=${checkedUserId}`;
-                    }else{
+                    } else {
                         alert("Izberite uporabnika!");
                     }
-                    
-                    
                 });
 
-                document.getElementById('add-project').addEventListener('click', async function() {
-                    window.location.href = 'NovProjekt.html'
+                document.getElementById('add-project').addEventListener('click', () => {
+                    window.location.href = 'NovProjekt.html';
                 });
 
-                document.getElementById('edit-project').addEventListener('click', async function() {
+                document.getElementById('edit-project').addEventListener('click', () => {
                     const checkedProjectID = getCheckedItemId('projects-list');
-                    if(checkedProjectID != null){
+                    if (checkedProjectID != null) {
                         document.cookie = `projectID=${checkedProjectID}; path=/`;
                         window.location.href = `urediProjekt.html?projectID=${checkedProjectID}`;
-                    }else{
+                    } else {
                         alert("Izberite projekt!");
-                    }                    
+                    }
+                });
+
+                document.getElementById('logout-button').addEventListener('click', () => {
+                    document.cookie = 'user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+                    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+                    window.location.href = 'login.html';
+                    history.pushState(null, null, 'login.html');
+                    window.addEventListener('popstate', () => {
+                        history.pushState(null, null, 'login.html');
+                    });
                 });
 
             } catch (error) {
                 console.error('Error fetching data:', error.message);
+                window.location.href = 'login.html';
             }
         });
     </script>
