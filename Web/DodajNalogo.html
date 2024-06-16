@@ -203,13 +203,13 @@
                 if (!response.ok) {
                     throw new Error('Failed to add task. Please check your input.');
                 }
-                alert('Task successfully added!');
+                alert('Naloga uspešno dodana!');
                 form.reset();                
                 window.location.href = 'Naloge.html';
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to add task. Please check your input.');
+                alert('Ni uspelo dodajanje naloge. Preveri vhodne podatke');
             });
         }
     </script>

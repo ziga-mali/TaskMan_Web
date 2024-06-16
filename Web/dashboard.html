@@ -106,7 +106,13 @@
 
                 document.getElementById('edit-user').addEventListener('click', async function() {
                     const checkedUserId = getCheckedItemId('users-list');
-                    window.location.href = `urediUporabnika.html?userID=${checkedUserId}`;
+                    if(checkedUserId != null){                        
+                        window.location.href = `urediUporabnika.html?userID=${checkedUserId}`;
+                    }else{
+                        alert("Izberite uporabnika!");
+                    }
+                    
+                    
                 });
 
                 document.getElementById('add-project').addEventListener('click', async function() {
@@ -115,8 +121,12 @@
 
                 document.getElementById('edit-project').addEventListener('click', async function() {
                     const checkedProjectID = getCheckedItemId('projects-list');
-                    document.cookie = `projectID=${checkedProjectID}; path=/`;
-                    window.location.href = `urediProjekt.html?projectID=${checkedProjectID}`;
+                    if(checkedProjectID != null){
+                        document.cookie = `projectID=${checkedProjectID}; path=/`;
+                        window.location.href = `urediProjekt.html?projectID=${checkedProjectID}`;
+                    }else{
+                        alert("Izberite projekt!");
+                    }                    
                 });
 
             } catch (error) {
