@@ -9,36 +9,86 @@
     <title>Dodaj nalogo</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .blue-band {
+            background-color: #33b5e5;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
+        }
+
+        .blue-band h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+
+        #username {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+
+        .home-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .home-button:hover {
+            background-color: #0056b3;
         }
 
         .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
             max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            padding: 0 20px;
+            box-sizing: border-box;
         }
 
         .form-row {
+            display: flex;
+            flex-direction: column;
             margin-bottom: 1rem;
         }
 
         .form-row label {
-            display: block;
             margin-bottom: 0.5rem;
-            font-weight: bold;
         }
 
-        .form-row input[type="text"], .form-row textarea {
-            width: 100%;
+        .form-row input[type="text"], .form-row textarea, .form-row input[type="datetime-local"] {
             padding: 0.5rem;
-            font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 4px;
+            width: 100%;
             box-sizing: border-box;
         }
 
@@ -47,19 +97,17 @@
             min-height: 100px;
         }
 
-        .form-row input[type="datetime-local"] {
-            width: calc(100% - 12px);
-        }
-
         .button-container {
-            text-align: center;
-            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            background-color: #fff;
+            padding: 10px 0;
         }
 
         .button-container button {
             padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
+            background-color: #33b5e5;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -67,12 +115,12 @@
         }
 
         .button-container button:hover {
-            background-color: #0056b3;
+            background-color: #1e88e5;
         }
 
         .error {
             color: red;
-            margin-top: 10px;
+            margin-bottom: 10px;
             text-align: center;
         }
     </style>
@@ -83,6 +131,7 @@
             <div id="username">Username</div>
         </div>
         <h1 class="TaskMan">TaskMan</h1>
+        <a href="dashboard.html" class="home-button">Domov</a>
     </div>
     <div class="container">
         <h2>Dodaj Nalogo</h2>
