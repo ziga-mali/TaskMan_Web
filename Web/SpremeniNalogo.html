@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <title>Spremeni nalogo</title>    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .form-row {
+            margin-bottom: 1rem;
+        }
+
+        .form-row label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-row input[type="text"], .form-row textarea {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-row textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row input[type="text"][readonly], .form-row input[type="datetime-local"][readonly] {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left">
+            <div id="username">Username</div>
+        </div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+    <div class="container">
+        <h2>Spremeni Nalogo</h2>
+        
+        <form id="edit-task-form">
+            <div class="form-row">
+                <label for="ime">Ime:</label>
+                <input type="text" id="ime" name="ime" required>
+            </div>
+            <div class="form-row">
+                <label for="opis">Opis:</label>
+                <textarea id="opis" name="opis" required></textarea>
+            </div>
+            <div class="form-row">
+                <label for="zac_cas">Začetni čas:</label>
+                <input type="datetime-local" id="zac_cas" name="zac_cas" readonly>
+            </div>
+            <div class="form-row">
+                <label for="kon_cas">Končni čas:</label>
+                <input type="datetime-local" id="kon_cas" name="kon_cas">
+            </div>
+            <div class="form-row">
+                <label for="koncano">Končano:</label>
+                <select id="koncano" name="koncano">
+                    <option value="1">Da</option>
+                    <option value="0">Ne</option>
+                </select>
+            </div>
+            <div class="button-container">
+                <button type="button" onclick="submitForm()">Potrdi spremembe</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectID = urlParams.get('projectID');
+        const taskID = urlParams.get('taskID');
+
+        const userID = getCookie('user_id');
+        const token = getCookie('token');
+
+        document.addEventListener('DOMContentLoaded', async function() {
+
+            try {
+                const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek || 'No Username Available';
+            } catch (error) {
+                console.error('Error fetching username:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching username';
+            }
+            
+            try {               
+
+                const response = await fetch(`http://localhost/TMan/API/projects/${projectID}/tasks/${taskID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch task details (${response.status})`);
+                }
+
+                const taskData = await response.json();
+
+                document.getElementById('ime').value = taskData[0].ime;
+                document.getElementById('opis').value = taskData[0].opis;
+                document.getElementById('zac_cas').value = formatDateForInput(taskData[0].zac_cas);
+                document.getElementById('kon_cas').value = taskData[0].kon_cas.replace(' ', 'T').slice(0, -3); // Remove seconds
+                document.getElementById('koncano').value = taskData[0].koncano;
+
+            } catch (error) {
+                console.error('Error fetching task data:', error.message);
+                alert('Failed to fetch task details. Please try again.');
+            }
+        });
+
+        function submitForm() {
+
+            const form = document.getElementById('edit-task-form');
+            const formData = new FormData(form);
+            const updatedTask = {
+                ime: formData.get('ime'),
+                opis: formData.get('opis'),
+                kon_cas: formData.get('kon_cas').replace('T', ' '),
+                koncano: formData.get('koncano')
+            };
+
+            fetch(`http://localhost/TMan/API/projects/${projectID}/tasks/${taskID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Identification': `UserID ${userID}`
+                },
+                body: JSON.stringify(updatedTask)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update task. Please check your input.');
+                }
+                alert('Task successfully updated!');
+                form.reset();
+                window.location.href = 'Naloge.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update task. Please check your input.');
+            });
+        }
+    </script>
+</body>
+</html>

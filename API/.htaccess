@@ -1,10 +1,6 @@
 RewriteEngine On 				# Vklopi 'rewriting engine'
 
-#RewriteRule ^igralci/?$ igralci.php [NC,L]						# če gre za zahtevek na relativni URL '/igralci' ga spremeni v 'igralci.php'
-#RewriteRule ^igralci/(.+)/?$ igralci.php?vzdevek=$1 [NC,L] 	# preslika vzorec 'igralci/xxxx' v 'igralci.php?vzdevek=xxxx' 
-
 RewriteRule ^login/?$ login.php [NC,L]
-RewriteRule ^podatki/?$ podatki.php [NC,L]  #Se ne rabi !!IZBRISI PRED ODDAJO!!
 
 RewriteRule ^userview/(.+)/?$ userview.php?id=$1 [NC,L]
 RewriteRule ^userview/?$ userview.php [NC,L]

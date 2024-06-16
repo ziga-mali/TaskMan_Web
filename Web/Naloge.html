@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <title>Seznam nalog</title>
+    <style>
+        .banner-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .task-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .task-list-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .task-list-item input[type="checkbox"] {
+            background-color: initial;
+            cursor: default;
+            appearance: auto;
+            box-sizing: border-box;
+            margin: 3px 3px 3px 4px;
+            padding: initial;
+            border: initial;
+            max-width: 15px;
+        }
+
+        .task-list-item label {
+            margin: 0;
+            align-items: left;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left">
+            <div id="username">Username</div>
+        </div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="banner-container">
+            <div id="banner">Seznam Nalog</div>
+        </div>
+        <div class="form-container">
+            <div class="form-row">
+                <label for="seznam-nalog">Naloge:
+                    <ul class="task-list" id="seznam-nalog">
+                    </ul>
+                </label>                    
+            </div>
+            <div class="button-container">
+                <button type="button" id="add-task">Dodaj nalogo</button>
+                <button type="button" id="change-task">Spremeni</button>
+                <button type="button" id="delete-task">Izbriši</button>
+            </div>
+        </div>
+        <div id="error-message" class="error"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userID = getCookie('user_id');
+            const token = getCookie('token');
+            const projectIDrequest = getCookie('projectID');
+
+            try {
+                const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek || 'No Username Available';
+            } catch (error) {
+                console.error('Error fetching username:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching username';
+            }
+
+            try {
+                const tasksResponse = await fetch(`http://localhost/TMan/API/projects/${projectIDrequest}/tasks`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!tasksResponse.ok) {
+                    throw new Error(`Failed to fetch tasks (${tasksResponse.status})`);
+                }
+
+                const tasksData = await tasksResponse.json();
+                const tasksList = document.getElementById('seznam-nalog');
+
+                tasksData.forEach(task => {
+                    const li = document.createElement('li');
+                    li.classList.add('task-list-item');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'taskID';
+                    checkbox.value = task.id;
+                    checkbox.onclick = function() {
+                        const checkboxes = document.querySelectorAll('.task-list-item input[type="checkbox"]');
+                        checkboxes.forEach(cb => {
+                            if (cb !== checkbox) cb.checked = false;
+                        });
+                    };
+                    li.appendChild(checkbox);
+                    li.appendChild(document.createTextNode(`${task.ime}`));
+                    tasksList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error fetching tasks:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching tasks';
+            }
+
+            document.getElementById('add-task').addEventListener('click', function() {
+                window.location.href = `DodajNalogo.html?projectID=${projectIDrequest}`;
+            });
+
+            document.getElementById('change-task').addEventListener('click', function() {
+                const selectedTask = document.querySelector('.task-list-item input[type="checkbox"]:checked');
+                if (selectedTask) {
+                    const taskID = selectedTask.value;
+                    window.location.href = `SpremeniNalogo.html?taskID=${taskID}&projectID=${projectIDrequest}`;
+                } else {
+                    alert('Prosimo, izberite nalogo za spreminjanje.');
+                }
+            });
+
+            document.getElementById('delete-task').addEventListener('click', async function() {
+                const selectedTask = document.querySelector('.task-list-item input[type="checkbox"]:checked');
+                if (selectedTask) {
+                    if (confirm('Ali ste prepričani, da želite izbrisati to nalogo?')) {
+                        const taskID = selectedTask.value;
+                        try {
+                            const response = await fetch(`http://localhost/TMan/API/projects/${projectIDrequest}tasks/${taskID}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Identification': `UserID ${userID}`
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Failed to delete task (${response.status})`);
+                            }
+
+                            alert('Naloga uspešno izbrisana!');
+                            selectedTask.parentElement.remove();
+                        } catch (error) {
+                            console.error('Error deleting task:', error.message);
+                            document.getElementById('error-message').textContent = 'Error deleting task';
+                        }
+                    }
+                } else {
+                    alert('Prosimo, izberite nalogo za izbris.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

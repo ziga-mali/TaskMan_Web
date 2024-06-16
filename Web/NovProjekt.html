@@ -18,7 +18,7 @@
         .button-container {
             display: flex;
             justify-content: space-between;
-            background-color: #fff; /* Match background color of list */
+            background-color: #fff;
             padding: 10px 20px;
             margin-top: 20px;
         }
@@ -28,8 +28,8 @@
             overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
-            list-style-type: none; /* Remove default list styles */
-            padding-left: 0; /* Remove default padding */
+            list-style-type: none;
+            padding-left: 0;
         }
 
         .user-list-item {
@@ -82,7 +82,6 @@
                 <div class="form-row">
                     <label for="osebe-dostop">Osebe z dostopom:
                         <ul class="user-list" id="osebe-dostop">
-                            <!-- User list checkboxes will be populated here -->
                         </ul>
                     </label>                    
                 </div>
@@ -99,6 +98,7 @@
             try {
                 const userID = getCookie('user_id');
                 const token = getCookie('token');
+                
 
                 const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
                     headers: {
@@ -150,7 +150,7 @@
                     const formData = new FormData(form);
                     const ime = formData.get('ime');
                     const opis = formData.get('opis');
-                    const dostopIDs = formData.getAll('dostop[]');
+                    const dostopIDs = formData.getAll('dostopID');
 
                     const newProject = {
                         ime: ime,

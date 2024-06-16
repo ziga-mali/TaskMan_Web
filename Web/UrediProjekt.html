@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <title>Ustvari projekt</title>
+    <style>
+        .banner-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .user-list-item input[type="checkbox"] {
+            background-color: initial;
+            cursor: default;
+            appearance: auto;
+            box-sizing: border-box;
+            margin: 3px 3px 3px 4px;
+            padding: initial;
+            border: initial;
+            max-width: 15px;
+        }
+
+        .user-list-item label {
+            margin: 0;
+            align-items: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="blue-band">
+        <div class="username-left">
+            <div id="username">Username</div>
+        </div>
+        <h1 class="TaskMan">TaskMan</h1>
+    </div>
+
+    <div class="container">
+        <div class="banner-container">
+            <div id="banner">Urejanje projekta</div>
+        </div>
+        <div class="form-container">
+            <form id="edit-project-form">
+                <div class="form-row">
+                    <label for="imeprojekta">Ime projekta:</label>
+                    <input type="text" id="imeprojekta" name="ime" required>
+                </div>
+                <div class="form-row">
+                    <label for="opisprojekta">Opis projekta:</label>
+                    <input type="text" id="opisprojekta" name="opis" required>
+                </div>
+                <div class="form-row">
+                    <label for="koncan">Končan:</label>
+                    <input type="checkbox" id="koncan" name="koncan" value="koncan">
+                </div>
+                <div class="form-row">
+                    <label for="osebe-dostop">Osebe z dostopom:
+                        <ul class="user-list" id="osebe-dostop">
+                        </ul>
+                    </label>                    
+                </div>
+                <div class="button-container">
+                    <button type="submit">Potrdi spremembe</button>
+                    <button type="button" id="delete-project">Izbriši projekt</button>
+                    <button type="button" id="get-tasks">Pridobi naloge</button>
+                </div>
+            </form>
+            <div id="error-message" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userID = getCookie('user_id');
+            const token = getCookie('token');
+            const projectIDrequest = getCookie('projectID');
+
+            try {
+                const userResponse = await fetch(`http://localhost/TMan/API/users/${userID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error(`Failed to fetch username (${userResponse.status})`);
+                }
+
+                const userData = await userResponse.json();
+                const vzdevek = userData.vzdevek;
+                document.getElementById('username').innerText = vzdevek || 'No Username Available';
+            } catch (error) {
+                console.error('Error fetching username:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching username';
+            }
+
+            try {
+                const usersResponse = await fetch('http://localhost/TMan/API/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!usersResponse.ok) {
+                    throw new Error(`Failed to fetch users (${usersResponse.status})`);
+                }
+
+                const usersData = await usersResponse.json();
+                const usersList = document.getElementById('osebe-dostop');
+
+                usersData.forEach(user => {
+                    const li = document.createElement('li');
+                    li.classList.add('user-list-item');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'dostopID';
+                    checkbox.value = user.id;
+                    li.appendChild(checkbox);
+                    li.appendChild(document.createTextNode(`${user.vzdevek}`));
+                    usersList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching users';
+            }
+
+            try {
+                const projectResponse = await fetch(`http://localhost/TMan/API/projects/${projectIDrequest}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Identification': `UserID ${userID}`
+                    }
+                });
+
+                if (!projectResponse.ok) {
+                    throw new Error(`Failed to fetch project (${projectResponse.status})`);
+                }
+
+                const projectData = await projectResponse.json();
+                if (projectData.length > 0) {
+                    const project = projectData[0];
+                    document.getElementById('imeprojekta').value = project.ime;
+                    document.getElementById('opisprojekta').value = project.opis;
+                    if (project.koncan === "1") {
+                        document.getElementById('koncan').checked = true;
+                    }
+                } else {
+                    throw new Error('No project data found');
+                }
+            } catch (error) {
+                console.error('Error fetching project data:', error.message);
+                document.getElementById('error-message').textContent = 'Error fetching project data';
+            }
+
+            const form = document.getElementById('edit-project-form');
+            const errorMessage = document.getElementById('error-message');
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const ime = formData.get('ime');
+                const opis = formData.get('opis');
+                const dostopIDs = formData.getAll('dostopID');
+                const koncan = formData.get('koncan') ? "1" : "0";
+
+                const changedProject = {
+                    ime: ime,
+                    opis: opis,
+                    userID: userID,
+                    dostop: dostopIDs,
+                    koncan: koncan
+                };
+
+                try {
+                    const response = await fetch(`http://localhost/TMan/API/projects/${projectIDrequest}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                            'Identification': `UserID ${userID}`
+                        },
+                        body: JSON.stringify(changedProject)
+                    });
+
+                    if (!response.ok) {
+                        let errorMessageText = 'Neuspešno spreminjanje projekta. Preveri vhodne podatke';
+                        if (response.status === 400 || response.status === 500) {
+                            errorMessageText = await response.text();
+                        }
+                        throw new Error(`Error ${response.status}: ${errorMessageText}`);
+                    }
+
+                    alert('Projekt uspešno spremenjen!');
+                    form.reset();
+                    errorMessage.textContent = '';
+                    window.location.href = 'dashboard.html';
+
+                } catch (error) {
+                    errorMessage.textContent = error.message || 'Failed to change project. Please check your input.';
+                    console.error('Error:', error);
+                }
+            });
+
+            document.getElementById('delete-project').addEventListener('click', async function() {
+                if (confirm('Ali ste prepričani, da želite izbrisati ta projekt?')) {
+                    try {
+                        const response = await fetch(`http://localhost/TMan/API/projects/${projectIDrequest}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Identification': `UserID ${userID}`
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Failed to delete project (${response.status})`);
+                        }
+
+                        alert('Projekt uspešno izbrisan!');
+                        window.location.href = 'dashboard.html';
+                    } catch (error) {
+                        console.error('Error deleting project:', error.message);
+                        errorMessage.textContent = 'Error deleting project';
+                    }
+                }
+            });
+
+            document.getElementById('get-tasks').addEventListener('click', async function() {
+                window.location.href = `Naloge.html`;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -114,10 +114,9 @@
                 });
 
                 document.getElementById('edit-project').addEventListener('click', async function() {
-                    // Logic to edit project
-                    console.log('Edit project logic here');
-                    const checkedProjectId = getCheckedItemId('projects-list');
-                    console.log('Checked project ID:', checkedProjectId);
+                    const checkedProjectID = getCheckedItemId('projects-list');
+                    document.cookie = `projectID=${checkedProjectID}; path=/`;
+                    window.location.href = `urediProjekt.html?projectID=${checkedProjectID}`;
                 });
 
             } catch (error) {

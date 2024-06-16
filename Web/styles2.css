@@ -29,34 +29,33 @@ body {
     margin: 0;
     font-size: 2rem;
     font-weight: bold;
-    flex: 1;
-    text-align: center;
+    flex: 1; /* Adjust to take remaining space */
+    text-align: center; /* Center align the text */
 }
 
 #username {
     font-size: 1.2rem;
     font-weight: bold;
-    margin-left: 20px;
+    margin-left: 20px; /* Adjust margin to position username */
 }
 
+/* Main content container */
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px;
-    padding: 0 20px;
+    max-width: 600px; /* Adjust width as needed */
+    padding: 0 20px; /* Adjust horizontal padding */
     box-sizing: border-box;
 }
 
+/* Banner styles */
 .banner-container {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 1rem;    
-    width: 50%;
     margin-bottom: 1rem;
-    box-sizing: border-box;
 }
 
 #banner {
@@ -71,6 +70,7 @@ body {
     box-sizing: border-box;
 }
 
+/* Form styles */
 .form-container {
     width: 100%;
     padding: 20px;
@@ -87,21 +87,26 @@ body {
 }
 
 .form-row label {
-    margin-bottom: 0.5rem;
+display: flex;
+align-items: center;
+margin-bottom: 0.5rem;
 }
 
-.form-row input {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
+.form-row input[type="checkbox"] {
+margin-left: 0.5rem;
+width: auto;
 }
 
+.form-row input[type="checkbox"] {
+    width: auto;
+    margin-top: 0.5rem;
+}
+
+/* Button container styles */
 .button-container {
     display: flex;
     justify-content: center;
-    background-color: #fff;
+    background-color: #fff; /* Match background color of list */
     padding: 10px 0;
 }
 
@@ -119,6 +124,7 @@ body {
     background-color: #1e88e5;
 }
 
+/* Error message styles */
 .error {
     color: red;
     margin-bottom: 10px;

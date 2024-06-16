@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="stylesUporabnik.css">    
-    <title>Registracija</title>
+    <link rel="stylesheet" href="stylesUporabnik.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="orodja.js"></script>    
+    <title>Ustvarjanje uporabnika</title>
     <style>
-        /* General styles */
         body {
             font-family: "Roboto", "Helvetica", "Arial", sans-serif;
             margin: 0;
@@ -18,8 +19,6 @@
             height: 100vh;
             background-color: #f0f0f0;
         }
-
-        /* Header styles */
         .blue-band {
             background-color: #33b5e5;
             color: white;
@@ -31,7 +30,7 @@
             align-items: center;
             margin-bottom: 1rem;
             width: 100%;
-            max-width: 1200px; /* Adjust width as needed */
+            max-width: 1200px;
             box-sizing: border-box;
         }
 
@@ -39,28 +38,26 @@
             margin: 0;
             font-size: 2rem;
             font-weight: bold;
-            flex: 1; /* Adjust to take remaining space */
-            text-align: center; /* Center align the text */
+            flex: 1;
+            text-align: center;
         }
 
         #username {
             font-size: 1.2rem;
             font-weight: bold;
-            margin-left: 20px; /* Adjust margin to position username */
+            margin-left: 20px;
         }
 
-        /* Main content container */
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 600px; /* Adjust width as needed */
-            padding: 0 20px; /* Adjust horizontal padding */
+            max-width: 600px;
+            padding: 0 20px;
             box-sizing: border-box;
         }
 
-        /* Banner styles */
         .banner-container {
             width: 100%;
             display: flex;
@@ -80,13 +77,12 @@
             box-sizing: border-box;
         }
 
-        /* Form styles */
         .form-container {
             width: 100%;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #fff; /* Ensure lists have white background */
+            background-color: #fff;
             box-sizing: border-box;
         }
 
@@ -97,22 +93,25 @@
         }
 
         .form-row label {
-            margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
         }
 
-        .form-row input {
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
+        .form-row input[type="checkbox"] {
+        margin-left: 0.5rem;
+        width: auto;
         }
 
-        /* Button container styles */
+        .form-row input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.5rem;
+        }
+
         .button-container {
             display: flex;
             justify-content: center;
-            background-color: #fff; /* Match background color of list */
+            background-color: #fff;
             padding: 10px 0;
         }
 
@@ -130,7 +129,6 @@
             background-color: #1e88e5;
         }
 
-        /* Error message styles */
         .error {
             color: red;
             margin-bottom: 10px;
@@ -176,7 +174,10 @@
                     <label for="mail">Email:</label>
                     <input type="email" id="mail" name="mail" required>
                 </div>
-
+                <div class="form-row">
+                    <label for="admin">Administrator:</label>
+                    <input type="checkbox" id="admin" name="admin">
+                </div>
                 <div class="button-container">
                     <button type="submit">Ustvari uporabnika</button>
                 </div>
@@ -230,7 +231,8 @@
                         geslo: MD5hash(formData.get('geslo')),
                         ime: formData.get('ime'),
                         priimek: formData.get('priimek'),
-                        mail: formData.get('mail')
+                        mail: formData.get('mail'),
+                        admin: formData.get('admin') ? 1 : 0
                     };
 
                     try {

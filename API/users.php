@@ -112,13 +112,19 @@ function nov_uporabnik()
 	
 	if(isset($podatki["vzdevek"], $podatki["geslo"], $podatki["ime"], $podatki["priimek"], $podatki["mail"]))
 	{
+		$poizvedbaPost="";
 		$vzdevek = mysqli_escape_string($zbirka, $podatki["vzdevek"]);
 		$geslo = mysqli_escape_string($zbirka, $podatki["geslo"]);
         $ime = mysqli_escape_string($zbirka, $podatki["ime"]);
         $priimek = mysqli_escape_string($zbirka, $podatki["priimek"]);
         $mail = mysqli_escape_string($zbirka, $podatki["mail"]);
-			
-        $poizvedbaPost="INSERT INTO user (vzdevek, geslo, ime, priimek, mail) VALUES ('$vzdevek', '$geslo', '$ime', '$priimek', '$mail')";
+		if(isset($podatki["admin"])){
+			$admin = mysqli_escape_string($zbirka, $podatki["admin"]);
+			$poizvedbaPost="INSERT INTO user (vzdevek, geslo, ime, priimek, mail, admin) VALUES ('$vzdevek', '$geslo', '$ime', '$priimek', '$mail', '$admin')";
+		}else{
+			$poizvedbaPost="INSERT INTO user (vzdevek, geslo, ime, priimek, mail) VALUES ('$vzdevek', '$geslo', '$ime', '$priimek', '$mail')";
+		}			
+       
         
         if(mysqli_query($zbirka, $poizvedbaPost))
         {

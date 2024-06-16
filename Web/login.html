@@ -3,22 +3,31 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="stylesUporabnik.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
         <script src="orodja.js"></script>
         <title>Login</title>
     </head>
     <body>
-        <div id="banner">TaskMan</div>
-        <form id="login-form">
-            <h1>Login</h1>
-            <label for="vzdevek">Username:</label>
-            <input type="text" id="vzdevek" name="vzdevek" required><br><br>
-            <label for="geslo">Password:</label>
-            <input type="password" id="geslo" name="geslo" required><br><br>
-            <button type="submit">Login</button>
-            <div id="response"></div>
-        </form>
+        <div class="container">
+            <div class="banner-container">
+                <div id="banner">TaskMan</div>
+            </div>
+            <div class="form-container">
+                <form id="login-form">
+                    <h1>Login</h1>
+                    <label for="vzdevek">Username:</label>
+                    <input type="text" id="vzdevek" name="vzdevek" required><br><br>
+                    <label for="geslo">Password:</label>
+                    <input type="password" id="geslo" name="geslo" required><br><br>
+                    <div class="button-container">
+                        <button type="submit">Login</button>
+                    </div>
+                    <div id="response"></div>
+                </form>
+            </div>            
+        </div>
+        
 
         <script>
             document.getElementById('login-form').addEventListener('submit', async function(event) {
@@ -46,7 +55,6 @@
                     const userId = data[0].user_id;
                     const token = data[0].token;
 
-                    // Save user_id and token as cookies
                     document.cookie = `user_id=${userId}; path=/`;
                     document.cookie = `token=${token}; path=/`;
 
