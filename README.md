@@ -1,6 +1,6 @@
 # TaskMan
 
-Spletna aplikacija TaskMan in backend z API kodo za projekt pri predmetu Seminar iz načrtovanja in razvoja programske opreme v telekomunikacijah. Dodana je tudi podatkovna baza z uporabnik Admin in geslom admin z administratorskimi pravicami. V bazi je že ustvarjen en projekt z eno nalogo.
+Spletna aplikacija TaskMan in backend z API kodo za projekt pri predmetu Seminar iz načrtovanja in razvoja programske opreme v telekomunikacijah. Dodana je tudi podatkovna baza z uporabnikom Admin in geslom admin z administratorskimi pravicami. V bazi je že ustvarjen en projekt z eno nalogo.
 
 ### Opis delovanja APIja
 
