@@ -230,18 +230,32 @@ function odstrani_projekt($id)
 	{
 		$poizvedbaProjectsUser="DELETE FROM projectsuser WHERE id_projekta='$id'";
 		
-		if(mysqli_query($zbirka, $poizvedbaProjectsUser))
-		{
-			$poizvedbaProjects="DELETE FROM projects WHERE id='$id'";
-			if(mysqli_query($zbirka, $poizvedbaProjects)){
-				http_response_code(204);	//OK with no content
+		if(mysqli_query($zbirka, $poizvedbaProjectsUser)){
+
+			$poizvedbaTaskProjects="DELETE FROM tasks WHERE id_projekta='$id'";
+
+			if(mysqli_query($zbirka, $poizvedbaTaskProjects))
+			{
+				$poizvedbaProjects="DELETE FROM projects WHERE id='$id'";
+				if(mysqli_query($zbirka, $poizvedbaProjects)){
+					http_response_code(204);	//OK with no content
+				}
+				
 			}
-			
+			else
+			{
+				http_response_code(500);	// Internal Server Error (ni nujno vedno streznik kriv!)
+				
+				if($DEBUG)	//Pozor: vračanje podatkov o napaki na strežniku je varnostno tveganje!
+				{
+					pripravi_odgovor_napaka(mysqli_error($zbirka));
+				}
+			}
 		}
 		else
-		{
+		{			
 			http_response_code(500);	// Internal Server Error (ni nujno vedno streznik kriv!)
-			
+				
 			if($DEBUG)	//Pozor: vračanje podatkov o napaki na strežniku je varnostno tveganje!
 			{
 				pripravi_odgovor_napaka(mysqli_error($zbirka));
